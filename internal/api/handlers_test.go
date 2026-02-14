@@ -120,14 +120,14 @@ func TestHandlers_Health(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 
 	var body map[string]any
-	json.NewDecoder(resp.Body).Decode(&body)
+	_ = json.NewDecoder(resp.Body).Decode(&body)
 	if body["status"] != "healthy" {
 		t.Errorf("status = %v, want 'healthy'", body["status"])
 	}
@@ -136,7 +136,7 @@ func TestHandlers_Health(t *testing.T) {
 func TestHandlers_ListStations(t *testing.T) {
 	ms := newMockStore()
 	now := time.Now().UTC()
-	ms.SaveStation(context.Background(), &store.Station{
+	_ = ms.SaveStation(context.Background(), &store.Station{
 		ID:        1001,
 		DeviceID:  100,
 		Name:      "Station 1",
@@ -151,14 +151,14 @@ func TestHandlers_ListStations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 
 	var stations []map[string]any
-	json.NewDecoder(resp.Body).Decode(&stations)
+	_ = json.NewDecoder(resp.Body).Decode(&stations)
 	if len(stations) != 1 {
 		t.Errorf("got %d stations, want 1", len(stations))
 	}
@@ -167,7 +167,7 @@ func TestHandlers_ListStations(t *testing.T) {
 func TestHandlers_GetStation(t *testing.T) {
 	ms := newMockStore()
 	now := time.Now().UTC()
-	ms.SaveStation(context.Background(), &store.Station{
+	_ = ms.SaveStation(context.Background(), &store.Station{
 		ID:        1001,
 		DeviceID:  100,
 		Name:      "Station 1",
@@ -183,14 +183,14 @@ func TestHandlers_GetStation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 		}
 
 		var body map[string]any
-		json.NewDecoder(resp.Body).Decode(&body)
+		_ = json.NewDecoder(resp.Body).Decode(&body)
 		if body["name"] != "Station 1" {
 			t.Errorf("name = %v, want %q", body["name"], "Station 1")
 		}
@@ -204,7 +204,7 @@ func TestHandlers_GetStation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusNotFound {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusNotFound)
@@ -216,7 +216,7 @@ func TestHandlers_GetStation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusBadRequest {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
@@ -242,14 +242,14 @@ func TestHandlers_GetCurrentObservation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 		}
 
 		var body map[string]any
-		json.NewDecoder(resp.Body).Decode(&body)
+		_ = json.NewDecoder(resp.Body).Decode(&body)
 		if body["air_temperature"] != 22.5 {
 			t.Errorf("temp = %v, want 22.5", body["air_temperature"])
 		}
@@ -266,7 +266,7 @@ func TestHandlers_GetCurrentObservation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusNotFound {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusNotFound)
@@ -294,14 +294,14 @@ func TestHandlers_GetObservations(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 		}
 
 		var body map[string]any
-		json.NewDecoder(resp.Body).Decode(&body)
+		_ = json.NewDecoder(resp.Body).Decode(&body)
 		obs, ok := body["observations"].([]any)
 		if !ok {
 			t.Fatal("expected observations array in envelope response")
@@ -320,7 +320,7 @@ func TestHandlers_GetObservations(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
@@ -333,7 +333,7 @@ func TestHandlers_GetObservations(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusBadRequest {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
@@ -346,7 +346,7 @@ func TestHandlers_GetObservations(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusBadRequest {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
@@ -364,7 +364,7 @@ func TestHandlers_GetDailySummary(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		// Should be 404 since no data.
 		if resp.StatusCode != http.StatusNotFound {
@@ -377,7 +377,7 @@ func TestHandlers_GetDailySummary(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusBadRequest {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
@@ -389,7 +389,7 @@ func TestHandlers_GetDailySummary(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusBadRequest {
 			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
@@ -439,14 +439,14 @@ func TestHandlers_Pagination(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer resp.Body.Close()
+			defer resp.Body.Close() //nolint:errcheck
 
 			if resp.StatusCode != http.StatusOK {
 				t.Fatalf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 			}
 
 			var body map[string]any
-			json.NewDecoder(resp.Body).Decode(&body)
+			_ = json.NewDecoder(resp.Body).Decode(&body)
 
 			obs, ok := body["observations"].([]any)
 			if !ok {
@@ -498,10 +498,10 @@ func TestHandlers_UnitConversion(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer resp.Body.Close()
+			defer resp.Body.Close() //nolint:errcheck
 
 			var body map[string]any
-			json.NewDecoder(resp.Body).Decode(&body)
+			_ = json.NewDecoder(resp.Body).Decode(&body)
 
 			if body["air_temperature"] != tt.wantTemp {
 				t.Errorf("temp = %v, want %v", body["air_temperature"], tt.wantTemp)
@@ -528,14 +528,14 @@ func TestHandlers_GetRange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 
 	var body map[string]any
-	json.NewDecoder(resp.Body).Decode(&body)
+	_ = json.NewDecoder(resp.Body).Decode(&body)
 	if body["station_id"] != float64(1001) {
 		t.Errorf("station_id = %v, want 1001", body["station_id"])
 	}
@@ -553,10 +553,10 @@ func TestHandlers_ErrorResponseHasCode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	var body map[string]any
-	json.NewDecoder(resp.Body).Decode(&body)
+	_ = json.NewDecoder(resp.Body).Decode(&body)
 	if body["code"] == nil {
 		t.Error("expected 'code' field in error response")
 	}
@@ -659,7 +659,7 @@ func TestHandlers_HealthReflectsStatus(t *testing.T) {
 			Timestamp: ts.Add(time.Duration(i) * time.Minute),
 		})
 	}
-	ms.SaveStation(context.Background(), &store.Station{
+	_ = ms.SaveStation(context.Background(), &store.Station{
 		ID:       1001,
 		DeviceID: 100,
 		Name:     "Test Station",
@@ -681,10 +681,10 @@ func TestHandlers_HealthReflectsStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	var body map[string]any
-	json.NewDecoder(resp.Body).Decode(&body)
+	_ = json.NewDecoder(resp.Body).Decode(&body)
 
 	if body["status"] != "healthy" {
 		t.Errorf("status = %v, want 'healthy'", body["status"])
@@ -736,14 +736,14 @@ func TestHandlers_InvalidResolution(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 
 	var body map[string]any
-	json.NewDecoder(resp.Body).Decode(&body)
+	_ = json.NewDecoder(resp.Body).Decode(&body)
 	// Should default to 1m.
 	if body["resolution"] != "invalid" {
 		t.Errorf("resolution = %v, should preserve input string", body["resolution"])

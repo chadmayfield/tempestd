@@ -32,7 +32,7 @@ func TestBackfiller_BackfillStation(t *testing.T) {
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 
@@ -155,7 +155,7 @@ func TestBackfiller_Pacing(t *testing.T) {
 			"obs":    []map[string]any{{"obs": [][]any{}}},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 
@@ -214,7 +214,7 @@ func TestBackfiller_Idempotency(t *testing.T) {
 	// SaveObservations on the mock store appends, so after a "re-backfill",
 	// we'd see new entries. In a real store with upsert, the count would stay the same.
 	// Test that the mock store receives the batch call (the real upsert is tested in store tests).
-	ms.SaveObservations(context.Background(), ms.observations)
+	_ = ms.SaveObservations(context.Background(), ms.observations)
 
 	// After saving the same observations again, they should be appended in mock
 	// but in real store would be upserted (same count).
@@ -237,7 +237,7 @@ func TestBackfiller_MultiChunkBackfill(t *testing.T) {
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 

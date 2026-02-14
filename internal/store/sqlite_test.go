@@ -18,11 +18,13 @@ func newTestSQLiteStore(t *testing.T) *SQLiteStore {
 	if err != nil {
 		t.Fatalf("NewSQLiteStore: %v", err)
 	}
-	t.Cleanup(func() { s.Close() })
+	t.Cleanup(func() { _ = s.Close() })
 
 	// Insert a station record for foreign key support.
 	ctx := context.Background()
-	s.SaveStation(ctx, &Station{ID: 1001, DeviceID: 100, Name: "Test", CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()})
+	if err := s.SaveStation(ctx, &Station{ID: 1001, DeviceID: 100, Name: "Test", CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()}); err != nil {
+		t.Fatalf("saving station: %v", err)
+	}
 
 	return s
 }
@@ -375,7 +377,7 @@ func TestSQLiteStore_FilePermissions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s.Close()
+	_ = s.Close()
 
 	info, err := os.Stat(dsn)
 	if err != nil {

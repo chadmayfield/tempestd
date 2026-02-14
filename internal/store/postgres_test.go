@@ -24,13 +24,19 @@ func newTestPostgresStore(t *testing.T) *PostgresStore {
 
 	// Clean tables before each test.
 	ctx := context.Background()
-	s.db.ExecContext(ctx, "DELETE FROM observations")
-	s.db.ExecContext(ctx, "DELETE FROM stations")
+	if _, err = s.db.ExecContext(ctx, "DELETE FROM observations"); err != nil {
+		t.Fatalf("cleaning observations: %v", err)
+	}
+	if _, err = s.db.ExecContext(ctx, "DELETE FROM stations"); err != nil {
+		t.Fatalf("cleaning stations: %v", err)
+	}
 
 	// Insert a station for FK support.
-	s.SaveStation(ctx, &Station{ID: 1001, DeviceID: 100, Name: "Test", CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()})
+	if err = s.SaveStation(ctx, &Station{ID: 1001, DeviceID: 100, Name: "Test", CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC()}); err != nil {
+		t.Fatalf("saving station: %v", err)
+	}
 
-	t.Cleanup(func() { s.Close() })
+	t.Cleanup(func() { _ = s.Close() })
 	return s
 }
 

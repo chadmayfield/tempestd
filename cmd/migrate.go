@@ -56,7 +56,7 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer s.Close()
+	defer s.Close() //nolint:errcheck
 
 	slog.Info("migrations complete")
 	return nil
@@ -80,7 +80,7 @@ func showPendingMigrations(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("opening database: %w", err)
 	}
-	defer db.Close()
+	defer db.Close() //nolint:errcheck
 
 	if err := goose.SetDialect(dialect); err != nil {
 		return err

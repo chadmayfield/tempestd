@@ -53,7 +53,7 @@ func runBackfill(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer s.Close()
+	defer s.Close() //nolint:errcheck
 
 	// Find the station in config.
 	var station *config.StationConfig

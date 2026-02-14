@@ -35,7 +35,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("connecting to %s: %w", statusServer, err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	var health struct {
 		Status   string `json:"status"`

@@ -29,17 +29,17 @@ func NewPostgresStore(dsn string) (*PostgresStore, error) {
 	}
 
 	if err := db.Ping(); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("pinging postgres: %w", err)
 	}
 
 	goose.SetBaseFS(pgMigrations)
 	if err := goose.SetDialect("postgres"); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("setting goose dialect: %w", err)
 	}
 	if err := goose.Up(db, "pgmigrations"); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("running migrations: %w", err)
 	}
 
@@ -112,7 +112,7 @@ func (s *PostgresStore) saveBatch(ctx context.Context, obs []tempest.Observation
 	if err != nil {
 		return fmt.Errorf("beginning transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() //nolint:errcheck // rollback after commit is harmless
 
 	stmt, err := tx.PrepareContext(ctx, `
 		INSERT INTO observations (
@@ -143,7 +143,7 @@ func (s *PostgresStore) saveBatch(ctx context.Context, obs []tempest.Observation
 	if err != nil {
 		return fmt.Errorf("preparing statement: %w", err)
 	}
-	defer stmt.Close()
+	defer stmt.Close() //nolint:errcheck
 
 	for _, o := range obs {
 		if _, err := stmt.ExecContext(ctx,
@@ -197,7 +197,7 @@ func (s *PostgresStore) GetObservations(ctx context.Context, stationID int, star
 	if err != nil {
 		return nil, fmt.Errorf("querying observations: %w", err)
 	}
-	defer rows.Close()
+	defer rows.Close() //nolint:errcheck
 
 	return scanObservations(rows)
 }
@@ -318,7 +318,7 @@ func (s *PostgresStore) GetStations(ctx context.Context) ([]Station, error) {
 	if err != nil {
 		return nil, fmt.Errorf("listing stations: %w", err)
 	}
-	defer rows.Close()
+	defer rows.Close() //nolint:errcheck
 
 	var stations []Station
 	for rows.Next() {

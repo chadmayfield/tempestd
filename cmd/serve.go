@@ -72,7 +72,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer s.Close()
+	defer s.Close() //nolint:errcheck
 
 	slog.Info("database ready", "driver", cfg.Storage.Driver)
 
@@ -133,9 +133,9 @@ func runServe(cmd *cobra.Command, args []string) error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer shutdownCancel()
 
-	srv.Shutdown(shutdownCtx)
-	connMgr.Shutdown(shutdownCtx)
-	s.Close()
+	_ = srv.Shutdown(shutdownCtx)
+	_ = connMgr.Shutdown(shutdownCtx)
+	_ = s.Close()
 
 	slog.Info("tempestd shutdown complete")
 	if waitErr != nil && !errors.Is(waitErr, context.Canceled) {

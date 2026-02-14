@@ -534,10 +534,7 @@ func TestCollector_MockWSServer(t *testing.T) {
 
 	// Poll for observation to appear (thread-safe).
 	deadline := time.After(5 * time.Second)
-	for {
-		if tms.obsCount() >= 1 {
-			break
-		}
+	for tms.obsCount() < 1 {
 		select {
 		case <-deadline:
 			t.Fatalf("timed out waiting for observation, got %d", tms.obsCount())
@@ -583,13 +580,13 @@ func (s *syncMockStore) SaveObservation(ctx context.Context, obs *tempest.Observ
 func (s *syncMockStore) obsCount() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return len(s.mockStore.observations)
+	return len(s.observations)
 }
 
 func (s *syncMockStore) getObs(i int) tempest.Observation {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.mockStore.observations[i]
+	return s.observations[i]
 }
 
 func TestCollector_ShutdownSequence(t *testing.T) {
@@ -664,7 +661,7 @@ func TestCollector_ShutdownSequence(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	// Close store (simulating serve.go's cleanup).
-	tracker.Close()
+	_ = tracker.Close()
 
 	seqMu.Lock()
 	defer seqMu.Unlock()

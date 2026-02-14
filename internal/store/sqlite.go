@@ -44,24 +44,24 @@ func NewSQLiteStore(dsn string) (*SQLiteStore, error) {
 		"PRAGMA foreign_keys=ON",
 	} {
 		if _, err := db.Exec(pragma); err != nil {
-			db.Close()
+			_ = db.Close()
 			return nil, fmt.Errorf("setting pragma %q: %w", pragma, err)
 		}
 	}
 
 	// Set file permissions to 0600.
 	if err := os.Chmod(dsn, 0600); err != nil && !os.IsNotExist(err) {
-		// File may not exist yet if just opened; ignore.
+		return nil, fmt.Errorf("setting file permissions: %w", err)
 	}
 
 	// Run migrations.
 	goose.SetBaseFS(migrations)
 	if err := goose.SetDialect("sqlite3"); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("setting goose dialect: %w", err)
 	}
 	if err := goose.Up(db, "migrations"); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("running migrations: %w", err)
 	}
 
@@ -134,7 +134,7 @@ func (s *SQLiteStore) saveBatch(ctx context.Context, obs []tempest.Observation) 
 	if err != nil {
 		return fmt.Errorf("beginning transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() //nolint:errcheck // rollback after commit is harmless
 
 	stmt, err := tx.PrepareContext(ctx, `
 		INSERT INTO observations (
@@ -165,7 +165,7 @@ func (s *SQLiteStore) saveBatch(ctx context.Context, obs []tempest.Observation) 
 	if err != nil {
 		return fmt.Errorf("preparing statement: %w", err)
 	}
-	defer stmt.Close()
+	defer stmt.Close() //nolint:errcheck
 
 	for _, o := range obs {
 		if _, err := stmt.ExecContext(ctx,
@@ -219,7 +219,7 @@ func (s *SQLiteStore) GetObservations(ctx context.Context, stationID int, start,
 	if err != nil {
 		return nil, fmt.Errorf("querying observations: %w", err)
 	}
-	defer rows.Close()
+	defer rows.Close() //nolint:errcheck
 
 	return scanObservations(rows)
 }
@@ -349,7 +349,7 @@ func (s *SQLiteStore) GetStations(ctx context.Context) ([]Station, error) {
 	if err != nil {
 		return nil, fmt.Errorf("listing stations: %w", err)
 	}
-	defer rows.Close()
+	defer rows.Close() //nolint:errcheck
 
 	var stations []Station
 	for rows.Next() {
