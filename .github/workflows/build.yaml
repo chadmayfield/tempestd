@@ -64,7 +64,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | ko login ghcr.io --username "${{ github.actor }}" --password-stdin
       - name: Build and push
         env:
-          KO_DOCKER_REPO: ghcr.io/${{ github.repository_owner }}
+          KO_DOCKER_REPO: ghcr.io/${{ github.repository }}
         run: |
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             ko build --bare --tags latest,${{ github.sha }},${GITHUB_REF#refs/tags/} .
