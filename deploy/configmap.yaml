@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempestd-config
+  namespace: tempestd
+data:
+  config.yaml: |
+    listen_addr: ":8080"
+    log_format: json
+    storage:
+      driver: sqlite
+      sqlite:
+        path: /var/lib/tempestd/tempestd.db
+    stations:
+      - station_id: 12345
+        device_id: 67890
+        name: "Weather Station"
+    collection:
+      backfill_on_startup: true
+      backfill_max_days: 30

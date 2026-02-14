@@ -1,0 +1,23 @@
+[Unit]
+Description=Tempest Weather Data Collection Daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tempestd
+Group=tempestd
+ExecStart=/usr/local/bin/tempestd serve --config /etc/tempestd/config.yaml
+Restart=always
+RestartSec=10
+KillMode=mixed
+TimeoutStopSec=30
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tempestd
+
+[Install]
+WantedBy=multi-user.target

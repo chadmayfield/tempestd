@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: tempestd_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.24'
+      - name: Run tests
+        env:
+          TEMPESTD_TEST_POSTGRES_DSN: postgres://test:test@localhost:5432/tempestd_test?sslmode=disable
+        run: go test -race -count=1 ./...
+      - name: Vet
+        run: go vet ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.24'
+      - uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6
+        with:
+          version: v1.64.5
+
+  build:
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.24'
+      - uses: ko-build/setup-ko@3aebd0597dc1e9d1a26bcfdb7cbeb19c131d3037 # v0.7
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | ko login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Build and push
+        env:
+          KO_DOCKER_REPO: ghcr.io/${{ github.repository_owner }}
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            ko build --bare --tags latest,${{ github.sha }},${GITHUB_REF#refs/tags/} .
+          else
+            ko build --bare --tags latest,${{ github.sha }} .
+          fi

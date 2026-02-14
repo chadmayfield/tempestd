@@ -1,0 +1,28 @@
+# Binaries
+tempestd
+*.exe
+
+# Environment / secrets
+.env
+*.env
+test-config.yaml
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Claude Code
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/

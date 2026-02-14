@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempestd
+  namespace: tempestd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tempestd
+  template:
+    metadata:
+      labels:
+        app: tempestd
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        fsGroup: 65532
+      containers:
+        - name: tempestd
+          image: ko://github.com/chadmayfield/tempestd
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/tempestd
+            - name: data
+              mountPath: /var/lib/tempestd
+          env:
+            - name: TEMPESTD_STATIONS_0_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tempestd-tokens
+                  key: station-token
+      volumes:
+        - name: config
+          configMap:
+            name: tempestd-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: tempestd-data
