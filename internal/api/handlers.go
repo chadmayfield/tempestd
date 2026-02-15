@@ -66,14 +66,17 @@ func unitSystemString(u tempest.UnitSystem) string {
 }
 
 func parseTime(s string) (time.Time, error) {
-	// Try RFC3339 first, then YYYY-MM-DD.
+	// Try RFC3339 first, then YYYY-MM-DD, then Unix epoch.
 	if t, err := time.Parse(time.RFC3339, s); err == nil {
 		return t, nil
 	}
 	if t, err := time.Parse(time.DateOnly, s); err == nil {
 		return t, nil
 	}
-	return time.Time{}, fmt.Errorf("invalid time format: %q (expected RFC3339 or YYYY-MM-DD)", s)
+	if epoch, err := strconv.ParseInt(s, 10, 64); err == nil {
+		return time.Unix(epoch, 0).UTC(), nil
+	}
+	return time.Time{}, fmt.Errorf("invalid time format: %q (expected RFC3339, YYYY-MM-DD, or Unix epoch)", s)
 }
 
 func parseResolution(s string) time.Duration {

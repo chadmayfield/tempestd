@@ -327,6 +327,43 @@ func TestHandlers_GetObservations(t *testing.T) {
 		}
 	})
 
+	t.Run("with Unix epoch timestamps", func(t *testing.T) {
+		// 1718452800 = 2024-06-15T12:00:00Z, 1718453400 = 2024-06-15T12:10:00Z
+		url := srv.URL + "/api/v1/stations/1001/observations?start=1718452800&end=1718453400"
+		resp, err := http.Get(url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close() //nolint:errcheck
+
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusOK)
+		}
+
+		var body map[string]any
+		_ = json.NewDecoder(resp.Body).Decode(&body)
+		obs, ok := body["observations"].([]any)
+		if !ok {
+			t.Fatal("expected observations array in envelope response")
+		}
+		if len(obs) != 10 {
+			t.Errorf("got %d observations, want 10", len(obs))
+		}
+	})
+
+	t.Run("invalid time format", func(t *testing.T) {
+		url := srv.URL + "/api/v1/stations/1001/observations?start=not-a-date&end=2024-06-15T12:10:00Z"
+		resp, err := http.Get(url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close() //nolint:errcheck
+
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
+		}
+	})
+
 	t.Run("missing start", func(t *testing.T) {
 		url := srv.URL + "/api/v1/stations/1001/observations?end=2024-06-15T12:10:00Z"
 		resp, err := http.Get(url)
