@@ -43,3 +43,8 @@ at 1-minute resolution in SQLite or PostgreSQL, exposes a REST API for querying.
 - Run tests after writing or modifying code
 - Never commit secrets, tokens, or real credentials
 - Explain tradeoffs briefly when making design decisions
+- NEVER tag/release without end-to-end testing first — build, run against live service, verify output
+- When told to verify: STOP changing code. Read source, trace paths, confirm with evidence. Only then propose a fix
+- Trace code paths step by step through actual source — don't guess what functions do
+- Verify claims through multiple independent means before presenting them as fact
+- Separate investigation from implementation — understand the full problem before proposing a fix
